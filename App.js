@@ -19,6 +19,9 @@ import {
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
+import HomeScreen from './src/screens/Home';
+import RicetteScreen from './src/screens/Ricette';
+
 const Tab = createBottomTabNavigator();
 const App = () => {
   return (
@@ -36,30 +39,6 @@ const App = () => {
   );
 };
 
-const HomeScreen = () => {
-  return (
-    <View>
-      <Text>Home</Text>
-      <Text>Home</Text>
-      <Text>Home</Text>
-      <Text>Home</Text>
-      <Text>Home</Text>
-      <Text>Home</Text>
-    </View>
-  )
-};
-const RicetteScreen = () => {
-  return (
-    <View>
-      <Text>Ricette</Text>
-      <Text>Ricette</Text>
-      <Text>Ricette</Text>
-      <Text>Ricette</Text>
-      <Text>Ricette</Text>
-      <Text>Ricette</Text>
-    </View>
-  )
-};
 
 const styles = StyleSheet.create({
   
