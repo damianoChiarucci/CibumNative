@@ -14,10 +14,14 @@ import {
   View,
   Text,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons'
+
+import { ROTTE } from './src/costanti';
 
 import HomeScreen from './src/screens/Home';
 import RicetteScreen from './src/screens/Ricette';
@@ -29,9 +33,35 @@ const App = () => {
       <StatusBar barStyle="dark-content" />
       <SafeAreaView style={{flex: 1}}>
         <NavigationContainer>
-          <Tab.Navigator>
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Ricette" component={RicetteScreen} />
+          <Tab.Navigator
+            tabBarOptions={{
+              activeTintColor: "tomato",
+              inactiveTintColor: "black"
+            }}
+            screenOptions={({route}) => ({
+              tabBarButton: (props) => {
+                if (route.name === ROTTE.DETTAGLIO) {
+                  return (null)
+                } else {
+                  return (<TouchableOpacity {...props}/>)
+                }
+              },
+              tabBarIcon: ({focused, color, size}) => {
+                let nomeIcona;
+
+                if (route.name === ROTTE.HOME) {
+                  nomeIcona = focused ? 'ios-home' : 'ios-home-outline'
+                } else if (route.name === ROTTE.RICETTE) {
+                  nomeIcona = focused ? 'ios-pizza' : 'ios-pizza-outline'
+                }
+
+                return (<Ionicons name={nomeIcona} color={color} size={size}/>)
+              }
+            })}
+          >
+            <Tab.Screen name={ROTTE.HOME} component={HomeScreen} />
+            <Tab.Screen name={ROTTE.RICETTE} component={RicetteScreen} />
+            <Tab.Screen name={ROTTE.DETTAGLIO} component={RicetteScreen} />
           </Tab.Navigator>
         </NavigationContainer>
       </SafeAreaView>

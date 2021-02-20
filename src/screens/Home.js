@@ -8,7 +8,8 @@ import {
 
 import Ionicons from 'react-native-vector-icons/Ionicons'
 
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }) => {
+    console.log(navigation)
     return (
         <View style={{flex: 1}}>
             <View style={styles.wrapper}>
