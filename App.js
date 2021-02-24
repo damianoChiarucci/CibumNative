@@ -36,7 +36,11 @@ const App = () => {
           <Tab.Navigator
             tabBarOptions={{
               activeTintColor: "tomato",
-              inactiveTintColor: "black"
+              inactiveTintColor: "black",
+              showLabel: true,
+              labelStyle: {
+                fontSize: 10
+              }
             }}
             screenOptions={({route}) => ({
               tabBarButton: (props) => {
