@@ -13,7 +13,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import homerImg from '../assets/homer-simpson.jpg';
 
 const HomeScreen = ({ navigation }) => {
-    console.log(navigation)
+    console.log(navigation);
     return (
         <View style={{flex: 1}}>
             <Homer width={400} height={500} />
