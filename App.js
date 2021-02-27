@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 import 'react-native-gesture-handler';
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -19,7 +19,8 @@ import {
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Ionicons from 'react-native-vector-icons/Ionicons'
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import SplashScreen from 'react-native-splash-screen';
 
 import { ROTTE } from './src/costanti';
 
@@ -28,6 +29,11 @@ import RicetteScreen from './src/screens/Ricette';
 
 const Tab = createBottomTabNavigator();
 const App = () => {
+
+  useEffect(() => {
+    // SplashScreen.hide();
+  }, []);
+
   return (
     <>
       <StatusBar barStyle="dark-content" />
