@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
+  ScrollView,
+  FlatList,
 } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
 
 const lista = [];
-for (let i=0; i < 100; i++) {
+for (let i=0; i < 10000; i++) {
   lista[i] = {
     nome: `Elemento ${i}`,
     id: i
@@ -15,15 +16,23 @@ for (let i=0; i < 100; i++) {
 };
 
 const RicetteScreen = () => {
+    // const [lista, setLista] = useState([]);
+    const __renderLista = ({item, index}) => (
+      <Text style={styles.elemento}>{item.nome}</Text>
+    );
     return (
       <View>
-        <ScrollView>
+        {/* <ScrollView>
           {lista.map((elem, id) => (
             <View key={id}>
               <Text style={styles.elemento}>{elem.nome}</Text>
             </View>
           ))}
-        </ScrollView>
+        </ScrollView> */}
+        <FlatList
+          data={lista}
+          renderItem={__renderLista}
+        />
       </View>
     )
 };

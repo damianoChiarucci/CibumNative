@@ -15,6 +15,7 @@ import {
   Text,
   StatusBar,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
@@ -27,21 +28,24 @@ import { ROTTE } from './src/costanti';
 import HomeScreen from './src/screens/Home';
 import RicetteScreen from './src/screens/Ricette';
 
+const colorTabIcon = Platform.OS === "ios" ? "black" : "tomato";
 const Tab = createBottomTabNavigator();
 const App = () => {
-
   useEffect(() => {
     SplashScreen.hide();
   }, []);
 
   return (
     <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={{flex: 1, backgroundColor: "coral"}}>
+        <StatusBar 
+          barStyle="dark-content" 
+          backgroundColor="coral"
+        />
         <NavigationContainer>
           <Tab.Navigator
             tabBarOptions={{
-              activeTintColor: "tomato",
+              activeTintColor: colorTabIcon,
               inactiveTintColor: "black",
               showLabel: true,
               labelStyle: {
