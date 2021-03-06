@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "321274120551",
+    "project_id": "cibumnative-a064a",
+    "storage_bucket": "cibumnative-a064a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:321274120551:android:88a8a5a26de1e6b36487c2",
+        "android_client_info": {
+          "package_name": "com.cibumnative"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "321274120551-7jc3geu6e4on4rf6ac5v344r949bq12c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDasLCKI15tu0hHfDOKGa2WM6QQn1Gzt5I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "321274120551-7jc3geu6e4on4rf6ac5v344r949bq12c.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
