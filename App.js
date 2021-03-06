@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 import 'react-native-gesture-handler';
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -18,6 +18,8 @@ import {
   Platform,
 } from 'react-native';
 
+import auth from '@react-native-firebase/auth';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -27,14 +29,72 @@ import { ROTTE } from './src/costanti';
 
 import HomeScreen from './src/screens/Home';
 import RicetteScreen from './src/screens/Ricette';
+import LoginScreen from './src/screens/Login';
 
 const colorTabIcon = Platform.OS === "ios" ? "black" : "tomato";
 const Tab = createBottomTabNavigator();
+
+function registraUtenteConEmail(email, pass) {
+  auth()
+  .createUserWithEmailAndPassword(email, pass)
+  .then(() => {
+    console.log('User creato e loggato!')
+  })
+  .catch((error) => {
+    if (error.code === 'auth/email-already-in-use') {
+      console.log("L'email è già stata utilizzata!")
+    }
+    console.error(error);
+  });
+};
+
+function loggaUtenteConEmail(email, pass) {
+  auth()
+  .signInWithEmailAndPassword(email, pass)
+  .catch((error) => {
+    if (error.code === 'auth/wrong-password') {
+      alert('Password Errata!');
+    }
+    console.error(error);
+  })
+};
+
+function logout() {
+  auth()
+  .signOut()
+  .then(() => console.log("L'utente si è sloggato!"));
+};
+
 const App = () => {
+  const [user, setUser] = useState(null);
+
+  const onAuthStateChanged = (userParam) => {
+    if (userParam) {
+      console.log('User Param Data: ', userParam);
+      setUser({
+        loggato: true,
+      })
+    } else {
+      setUser({
+        loggato: false
+      });
+    }
+  };
   useEffect(() => {
     SplashScreen.hide();
+  
+    const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+    return subscriber;
   }, []);
 
+  if (user && !user.loggato) {
+    return (
+      <LoginScreen
+        registraUtenteConEmail={registraUtenteConEmail}
+        loggaUtenteConEmail={loggaUtenteConEmail}
+      />
+    )
+  }
   return (
     <>
       <SafeAreaView style={{flex: 1, backgroundColor: "coral"}}>
@@ -42,6 +102,7 @@ const App = () => {
           barStyle="dark-content" 
           backgroundColor="coral"
         />
+        <TouchableOpacity onPress={() => logout()}><Text>Logout</Text></TouchableOpacity>
         <NavigationContainer>
           <Tab.Navigator
             tabBarOptions={{
