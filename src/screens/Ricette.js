@@ -11,7 +11,7 @@ const lista = [];
 for (let i=0; i < 10000; i++) {
   lista[i] = {
     nome: `Elemento ${i}`,
-    id: i
+    id: i.toString(),
   }
 };
 
@@ -32,6 +32,7 @@ const RicetteScreen = () => {
         <FlatList
           data={lista}
           renderItem={__renderLista}
+          keyExtractor={(elementoLista) => elementoLista.id}
         />
       </View>
     )
