@@ -6,7 +6,7 @@
  * @flow strict-local
  */
 import 'react-native-gesture-handler';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -40,6 +40,7 @@ function registraUtenteConEmail(email, pass, username) {
   .createUserWithEmailAndPassword(email, pass)
   .then(({user}) => {
     console.log('User creato e loggato!');
+    user.sendEmailVerification();
     user.updateProfile({
       displayName: username
     })
@@ -88,8 +89,12 @@ function sendPasswordResetEmail(email) {
     });
 };
 
+export const RicetteContext = createContext();
+
 const App = () => {
   const [user, setUser] = useState(null);
+  const [chiaviRicette, setChiaviRicette] = useState([]);
+  const [oggettoRicette, setOggettoRicette] = useState({});
 
   const onAuthStateChanged = (userParam) => {
     if (userParam) {
@@ -98,7 +103,8 @@ const App = () => {
         loggato: true,
         email: userParam.email,
         uid: userParam.uid,
-        name: userParam.displayName
+        name: userParam.displayName,
+        emailVerified: userParam.emailVerified,
       })
     } else {
       setUser({
@@ -109,6 +115,15 @@ const App = () => {
 
   useEffect(() => {
     SplashScreen.hide();
+
+    const ricetteRef = database().ref('/ricette');
+    ricetteRef.on('value', (ricetteDbObj) => {
+      const ricetteObj = ricetteDbObj.val();
+      const ricetteArray = Object.keys(ricetteObj);
+      console.log('RICETTE ARRAY: ', ricetteArray)
+      setChiaviRicette(ricetteArray);
+      setOggettoRicette(ricetteObj)
+    });
   
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
@@ -132,17 +147,24 @@ const App = () => {
   }, [user]);
 
 
-  if (user && !user.loggato) {
+  if (user && (!user.loggato || !user.emailVerified)) {
     return (
       <LoginScreen
         registraUtenteConEmail={registraUtenteConEmail}
         loggaUtenteConEmail={loggaUtenteConEmail}
         sendPasswordResetEmail={sendPasswordResetEmail}
+        emailVerified={user.emailVerified}
+        logout={logout}
       />
     )
   }
   return (
-    <>
+    <RicetteContext.Provider
+      value={{
+        oggettoRicette,
+        chiaviRicette,
+      }}
+    >
       <SafeAreaView style={{flex: 1, backgroundColor: "coral"}}>
         <StatusBar 
           barStyle="dark-content" 
@@ -186,7 +208,7 @@ const App = () => {
           </Tab.Navigator>
         </NavigationContainer>
       </SafeAreaView>
-    </>
+    </RicetteContext.Provider>
   );
 };
 

@@ -2,10 +2,27 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements';
 
-const LoginScreen = ({registraUtenteConEmail, loggaUtenteConEmail, sendPasswordResetEmail}) => {
+const LoginScreen = ({registraUtenteConEmail, loggaUtenteConEmail, sendPasswordResetEmail, emailVerified, logout}) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [pass, setPass] = useState('');
+
+  const registrazioneAbilitata = () => {
+
+    return (email.length === 0 || pass.length === 0 || username.length === 0);
+  };
+
+  if (emailVerified === false) {
+    return (
+      <View style={{flex: 1}}>
+        <View style={styles.container}>
+          <Text>Verifica la tua email con il link che ti abbiamo inviato ed esegui nuovamente la login</Text>
+          <TouchableOpacity onPress={() => logout()}><Text>Logout</Text></TouchableOpacity>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View style={{flex: 1}}>
       <View style={styles.container}>
@@ -40,11 +57,13 @@ const LoginScreen = ({registraUtenteConEmail, loggaUtenteConEmail, sendPasswordR
           <Button
             title="Accedi"
             type="outline"
+            disabled={(email.length === 0 || pass.length === 0)}
             onPress={() => {loggaUtenteConEmail(email, pass)}}
           />
           <Button
             title="Registrati"
             type="solid"
+            disabled={registrazioneAbilitata()}
             onPress={() => {registraUtenteConEmail(email, pass, username)}}
           />
         </View>
