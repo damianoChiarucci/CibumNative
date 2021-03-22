@@ -26,14 +26,37 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SplashScreen from 'react-native-splash-screen';
 
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+
+import AsyncStorage from '@react-native-community/async-storage';
 import { ROTTE } from './src/costanti';
 
 import HomeScreen from './src/screens/Home';
 import RicetteScreen from './src/screens/Ricette';
 import LoginScreen from './src/screens/Login';
+import TutorialScreen from './src/screens/Tutorial';
 
 const colorTabIcon = Platform.OS === "ios" ? "black" : "tomato";
 const Tab = createBottomTabNavigator();
+
+GoogleSignin.configure({
+  webClientId: '321274120551-7jc3geu6e4on4rf6ac5v344r949bq12c.apps.googleusercontent.com',
+});
+
+async function onGoogleButtonPress() {
+  try {
+    const { idToken } = await GoogleSignin.signIn();
+    const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+    return auth().signInWithCredential(googleCredential);
+  } catch (e) {
+    if (e.code === statusCodes.SIGN_IN_CANCELLED) {
+      console.log('SIGN_IN_CANCELLED');
+    } else if (e.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      console.log('PLAY_SERVICES_NOT_AVAILABLE');
+    }
+  }
+
+};
 
 function registraUtenteConEmail(email, pass, username) {
   auth()
@@ -95,6 +118,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [chiaviRicette, setChiaviRicette] = useState([]);
   const [oggettoRicette, setOggettoRicette] = useState({});
+  const [showTutorial, setShowTutorial] = useState(true);
 
   const onAuthStateChanged = (userParam) => {
     if (userParam) {
@@ -114,7 +138,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    SplashScreen.hide();
+    
 
     const ricetteRef = database().ref('/ricette');
     ricetteRef.on('value', (ricetteDbObj) => {
@@ -124,6 +148,21 @@ const App = () => {
       setChiaviRicette(ricetteArray);
       setOggettoRicette(ricetteObj)
     });
+
+    const retriveDataTutorial = async () => {
+      try {
+        const value = await AsyncStorage.getItem('TUTORIAL');
+        if (value !== null) {
+          setShowTutorial(false);
+          console.log('TUTORIAL VALUE: ', value);
+        }
+        SplashScreen.hide();
+      } catch (error) {
+        console.error(error);
+        SplashScreen.hide();
+      }
+    };
+    retriveDataTutorial();
   
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
     return subscriber;
@@ -155,9 +194,19 @@ const App = () => {
         sendPasswordResetEmail={sendPasswordResetEmail}
         emailVerified={user.emailVerified}
         logout={logout}
+        onGoogleButtonPress={onGoogleButtonPress}
       />
     )
   }
+
+  if (showTutorial) {
+    return (
+      <TutorialScreen
+        setShowTutorial={setShowTutorial}
+      />
+    )
+  }
+
   return (
     <RicetteContext.Provider
       value={{

@@ -4,21 +4,40 @@ import {
   Text,
   StyleSheet,
   Dimensions,
+  ScrollView,
+  FlatList,
   ActivityIndicator,
 } from 'react-native';
 
 import { RicetteContext } from '../../App';
+import MiniaturaRicetta from '../components/MiniaturaRicetta';
 
 const HomeScreen = ({ navigation }) => {
 
   const {chiaviRicette, oggettoRicette} = useContext(RicetteContext);
+  const __renderLista = ({item, index}) => {
+
+    if (!oggettoRicette[item]) {
+      return null;
+    }
+    return (
+      <View>
+        <MiniaturaRicetta
+          titolo={oggettoRicette[item].name}
+          descrizione={oggettoRicette[item].description}
+          imgUrl={oggettoRicette[item].image.url}
+          chiave={item}
+        />
+      </View>
+    )
+  };
   return (
     <View style={{ flex: 1 }}>
-      {chiaviRicette && chiaviRicette.map((chiave) => (
-        <View key={chiave}>
-          <Text>{oggettoRicette[chiave] && oggettoRicette[chiave].name}</Text>
-        </View>
-      ))}
+      <FlatList
+        data={chiaviRicette}
+        renderItem={__renderLista}
+        keyExtractor={(elementoLista) => elementoLista}
+      />
     </View>
   )
 };

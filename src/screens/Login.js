@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { Button } from 'react-native-elements';
+import { GoogleSigninButton } from '@react-native-google-signin/google-signin';
 
-const LoginScreen = ({registraUtenteConEmail, loggaUtenteConEmail, sendPasswordResetEmail, emailVerified, logout}) => {
+const LoginScreen = ({registraUtenteConEmail, loggaUtenteConEmail, sendPasswordResetEmail, emailVerified, logout, onGoogleButtonPress}) => {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [pass, setPass] = useState('');
@@ -70,6 +71,12 @@ const LoginScreen = ({registraUtenteConEmail, loggaUtenteConEmail, sendPasswordR
         <TouchableOpacity onPress={() => sendPasswordResetEmail(email)}>
           <Text style={styles.resetPassword}>Password Dimenticata?</Text>
         </TouchableOpacity>
+        <GoogleSigninButton
+          // style={{ width: 192, height:48 }}
+          size={GoogleSigninButton.Size.Icon}
+          // color={GoogleSigninButton.Color.Dark}
+          onPress={onGoogleButtonPress}
+        />
       </View>
     </View>
   )
