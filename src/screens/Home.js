@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 
 import { RicetteContext } from '../../App';
+import { ROTTE, ROTTE_RICETTE } from '../costanti';
 import MiniaturaRicetta from '../components/MiniaturaRicetta';
 
 const HomeScreen = ({ navigation }) => {
@@ -27,6 +28,14 @@ const HomeScreen = ({ navigation }) => {
           descrizione={oggettoRicette[item].description}
           imgUrl={oggettoRicette[item].image.url}
           chiave={item}
+          goToDetails={() => navigation.navigate(ROTTE.RICETTE, 
+            {
+              screen: ROTTE_RICETTE.DETTAGLIO,
+              params: {
+                chiave: item
+              }
+            }
+          )}
         />
       </View>
     )

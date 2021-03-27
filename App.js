@@ -16,6 +16,7 @@ import {
   StatusBar,
   TouchableOpacity,
   Platform,
+  I18nManager
 } from 'react-native';
 
 import auth from '@react-native-firebase/auth';
@@ -23,18 +24,47 @@ import database from '@react-native-firebase/database';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import memoize from 'lodash.memoize';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import SplashScreen from 'react-native-splash-screen';
 
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 
 import AsyncStorage from '@react-native-community/async-storage';
+
+import * as RNLocalize from 'react-native-localize';
+import i18n from 'i18n-js';
 import { ROTTE } from './src/costanti';
 
 import HomeScreen from './src/screens/Home';
 import RicetteScreen from './src/screens/Ricette';
+import DettaglioScreen from './src/screens/Dettaglio';
 import LoginScreen from './src/screens/Login';
 import TutorialScreen from './src/screens/Tutorial';
+
+const gettersTraduzioni = {
+  it: () => require("./src/traduzioni/it.json"),
+  en: () => require("./src/traduzioni/en.json")
+};
+
+const translate = memoize(
+  (key, config) => i18n.t(key, config),
+  (key, config) => (config ? key + JSON.stringify(config) : key),
+);
+
+const setI18nConfiguration = (() => {
+  const fallback = { languageTag: "en", isRTL: true};
+  const { languageTag, isRTL } = RNLocalize.findBestAvailableLanguage(Object.keys(gettersTraduzioni)) || fallback;
+  
+  translate.cache.clear();
+  
+  I18nManager.forceRTL(isRTL);
+
+
+  i18n.translations = { [languageTag]: gettersTraduzioni[languageTag]()};
+  i18n.locale = languageTag;
+  console.log(i18n.locale, i18n.translations);
+})();
 
 const colorTabIcon = Platform.OS === "ios" ? "black" : "tomato";
 const Tab = createBottomTabNavigator();
@@ -219,7 +249,10 @@ const App = () => {
           barStyle="dark-content" 
           backgroundColor="coral"
         />
-        <TouchableOpacity onPress={() => logout()}><Text>Logout</Text></TouchableOpacity>
+        <View>
+          <Text>{translate("hello")}</Text>
+        </View>
+        <TouchableOpacity onPress={() => logout()}><Text>{translate("logout")}</Text></TouchableOpacity>
         <NavigationContainer>
           <Tab.Navigator
             tabBarOptions={{
@@ -253,7 +286,7 @@ const App = () => {
           >
             <Tab.Screen name={ROTTE.HOME} component={HomeScreen} />
             <Tab.Screen name={ROTTE.RICETTE} component={RicetteScreen} />
-            <Tab.Screen name={ROTTE.DETTAGLIO} component={RicetteScreen} />
+            {/* <Tab.Screen name={ROTTE.DETTAGLIO} component={DettaglioScreen} /> */}
           </Tab.Navigator>
         </NavigationContainer>
       </SafeAreaView>

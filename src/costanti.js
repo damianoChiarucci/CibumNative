@@ -1,5 +1,8 @@
 export const ROTTE = {
     HOME: "Home",
     RICETTE: "Ricette",
-    DETTAGLIO: "Dettaglio"
 };
+export const ROTTE_RICETTE = {
+    RICETTE: 'Ricette',
+    DETTAGLIO: 'Dettaglio'
+  };
