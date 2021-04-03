@@ -21,6 +21,7 @@ import {
 
 import auth from '@react-native-firebase/auth';
 import database from '@react-native-firebase/database';
+import messaging from '@react-native-firebase/messaging';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -41,6 +42,7 @@ import RicetteScreen from './src/screens/Ricette';
 import DettaglioScreen from './src/screens/Dettaglio';
 import LoginScreen from './src/screens/Login';
 import TutorialScreen from './src/screens/Tutorial';
+import YoutubeScreen from './src/screens/Youtube';
 
 const gettersTraduzioni = {
   it: () => require("./src/traduzioni/it.json"),
@@ -142,13 +144,37 @@ function sendPasswordResetEmail(email) {
     });
 };
 
+async function getFcmToken() {
+  const fcmToken = await messaging().getToken();
+
+  if (fcmToken) {
+    console.log("Fcm Token: ", fcmToken);
+  } else {
+    console.log("Fcm Token: Nessun Token!!");
+  }
+};
+
+async function requestUserPermission() {
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  if (enabled) {
+    getFcmToken();
+    console.log('Auth Notifiche: ', authStatus);
+  }
+};
+
 export const RicetteContext = createContext();
+export const UserContext = createContext();
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [chiaviRicette, setChiaviRicette] = useState([]);
   const [oggettoRicette, setOggettoRicette] = useState({});
   const [showTutorial, setShowTutorial] = useState(true);
+
+  const [preferiti, setPreferiti] = useState({});
 
   const onAuthStateChanged = (userParam) => {
     if (userParam) {
@@ -168,8 +194,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    
-
+    requestUserPermission();
     const ricetteRef = database().ref('/ricette');
     ricetteRef.on('value', (ricetteDbObj) => {
       const ricetteObj = ricetteDbObj.val();
@@ -195,7 +220,15 @@ const App = () => {
     retriveDataTutorial();
   
     const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
-    return subscriber;
+    const subscriberFCM = messaging().onMessage(
+      async remoteMessage => {
+        console.log('Arrivato un nuovo FCM!', JSON.stringify(remoteMessage));
+      }
+    );
+    return () => {
+      subscriber();
+      subscriberFCM();
+    };
   }, []);
 
   useEffect(() => {
@@ -204,7 +237,9 @@ const App = () => {
       utenteReferenza.once("value", (utenteSnapshot) => {
         const cloneObjUtente = utenteSnapshot.val();
         if(cloneObjUtente) {
-
+          if (cloneObjUtente.preferiti) {
+            setPreferiti(cloneObjUtente.preferiti);
+          }
         } else {
           utenteReferenza.set({
             email: user.email,
@@ -214,6 +249,44 @@ const App = () => {
       })
     }
   }, [user]);
+
+  const aggiungiPreferito = (id) => {
+    const preferitoRef = database().ref(`/utenti/${user.uid}/preferiti`).push(id);
+    const chiavePreferito = preferitoRef.key;
+    const nuoviPreferiti = {...preferiti};
+    nuoviPreferiti[chiavePreferito] = id;
+    setPreferiti(nuoviPreferiti);
+  };
+  const rimuoviPreferito = (id) => {
+    const chiaveDaRimuovere = Object.keys(preferiti).find(
+      (chiave) => preferiti[chiave] === id
+    );
+    const preferitoRef = database().ref(`/utenti/${user.uid}/preferiti/${chiaveDaRimuovere}`).remove();
+
+    const nuoviPreferiti = {...preferiti};
+
+    delete nuoviPreferiti[chiaveDaRimuovere];
+    setPreferiti(nuoviPreferiti);
+  };
+
+  const isPreferito = (id) => {
+    const indexChiavePreferito = Object.keys(preferiti).findIndex(
+      (chiave) => preferiti[chiave] === id
+    );
+
+    if (indexChiavePreferito >= 0) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const togglePreferito = (id) => {
+    if (isPreferito(id)) {
+      return rimuoviPreferito(id);
+    } 
+    return aggiungiPreferito(id);
+  };
 
 
   if (user && (!user.loggato || !user.emailVerified)) {
@@ -244,52 +317,61 @@ const App = () => {
         chiaviRicette,
       }}
     >
-      <SafeAreaView style={{flex: 1, backgroundColor: "coral"}}>
-        <StatusBar 
-          barStyle="dark-content" 
-          backgroundColor="coral"
-        />
-        <View>
-          <Text>{translate("hello")}</Text>
-        </View>
-        <TouchableOpacity onPress={() => logout()}><Text>{translate("logout")}</Text></TouchableOpacity>
-        <NavigationContainer>
-          <Tab.Navigator
-            tabBarOptions={{
-              activeTintColor: colorTabIcon,
-              inactiveTintColor: "black",
-              showLabel: true,
-              labelStyle: {
-                fontSize: 10
-              }
-            }}
-            screenOptions={({route}) => ({
-              tabBarButton: (props) => {
-                if (route.name === ROTTE.DETTAGLIO) {
-                  return (null)
-                } else {
-                  return (<TouchableOpacity {...props}/>)
+      <UserContext.Provider
+        value={{
+          user,
+          togglePreferito,
+          isPreferito,
+        }}
+      >
+        <SafeAreaView style={{flex: 1, backgroundColor: "coral"}}>
+          <StatusBar 
+            barStyle="dark-content" 
+            backgroundColor="coral"
+          />
+          <View>
+            <Text>{translate("hello")}</Text>
+          </View>
+          <TouchableOpacity onPress={() => logout()}><Text>{translate("logout")}</Text></TouchableOpacity>
+          <NavigationContainer>
+            <Tab.Navigator
+              tabBarOptions={{
+                activeTintColor: colorTabIcon,
+                inactiveTintColor: "black",
+                showLabel: true,
+                labelStyle: {
+                  fontSize: 10
                 }
-              },
-              tabBarIcon: ({focused, color, size}) => {
-                let nomeIcona;
+              }}
+              screenOptions={({route}) => ({
+                tabBarButton: (props) => {
+                  if (route.name === ROTTE.DETTAGLIO) {
+                    return (null)
+                  } else {
+                    return (<TouchableOpacity {...props}/>)
+                  }
+                },
+                tabBarIcon: ({focused, color, size}) => {
+                  let nomeIcona;
 
-                if (route.name === ROTTE.HOME) {
-                  nomeIcona = focused ? 'ios-home' : 'ios-home-outline'
-                } else if (route.name === ROTTE.RICETTE) {
-                  nomeIcona = focused ? 'ios-pizza' : 'ios-pizza-outline'
+                  if (route.name === ROTTE.HOME) {
+                    nomeIcona = focused ? 'ios-home' : 'ios-home-outline'
+                  } else if (route.name === ROTTE.RICETTE) {
+                    nomeIcona = focused ? 'ios-pizza' : 'ios-pizza-outline'
+                  }
+
+                  return (<Ionicons name={nomeIcona} color={color} size={size}/>)
                 }
-
-                return (<Ionicons name={nomeIcona} color={color} size={size}/>)
-              }
-            })}
-          >
-            <Tab.Screen name={ROTTE.HOME} component={HomeScreen} />
-            <Tab.Screen name={ROTTE.RICETTE} component={RicetteScreen} />
-            {/* <Tab.Screen name={ROTTE.DETTAGLIO} component={DettaglioScreen} /> */}
-          </Tab.Navigator>
-        </NavigationContainer>
-      </SafeAreaView>
+              })}
+            >
+              <Tab.Screen name={ROTTE.HOME} component={HomeScreen} />
+              <Tab.Screen name={ROTTE.RICETTE} component={RicetteScreen} />
+              <Tab.Screen name={ROTTE.YOUTUBE} component={YoutubeScreen} />
+              {/* <Tab.Screen name={ROTTE.DETTAGLIO} component={DettaglioScreen} /> */}
+            </Tab.Navigator>
+          </NavigationContainer>
+        </SafeAreaView>
+      </UserContext.Provider>
     </RicetteContext.Provider>
   );
 };

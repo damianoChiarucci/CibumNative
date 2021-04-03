@@ -9,13 +9,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 
-import { RicetteContext } from '../../App';
+import { RicetteContext, UserContext } from '../../App';
 import { ROTTE, ROTTE_RICETTE } from '../costanti';
 import MiniaturaRicetta from '../components/MiniaturaRicetta';
 
 const HomeScreen = ({ navigation }) => {
 
   const {chiaviRicette, oggettoRicette} = useContext(RicetteContext);
+  const {user, isPreferito, togglePreferito} = useContext(UserContext);
   const __renderLista = ({item, index}) => {
 
     if (!oggettoRicette[item]) {
@@ -28,6 +29,8 @@ const HomeScreen = ({ navigation }) => {
           descrizione={oggettoRicette[item].description}
           imgUrl={oggettoRicette[item].image.url}
           chiave={item}
+          isPreferito={isPreferito}
+          togglePreferito={togglePreferito}
           goToDetails={() => navigation.navigate(ROTTE.RICETTE, 
             {
               screen: ROTTE_RICETTE.DETTAGLIO,

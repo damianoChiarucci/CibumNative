@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, Image, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
-import {Card} from 'react-native-elements';
+import {Card, Button} from 'react-native-elements';
 
-const MiniaturaRicetta = ({titolo, descrizione, imgUrl, chiave, goToDetails}) => {
+const MiniaturaRicetta = ({titolo, descrizione, imgUrl, chiave, goToDetails, isPreferito, togglePreferito}) => {
 
   if(!titolo) {
     return null;
   }
   return (
     <Card>
-      <TouchableOpacity onPress={goToDetails}>
+      <TouchableOpacity onPress={goToDetails} pointerEvents={'box-none'}>
         <Card.Title>{titolo}</Card.Title>
         <Image
           resizeMode="cover"
@@ -17,6 +17,13 @@ const MiniaturaRicetta = ({titolo, descrizione, imgUrl, chiave, goToDetails}) =>
           style={styles.foto}
         />
         <Text>{descrizione}</Text>
+        <View style={{ marginTop: 50}}>
+          <Button
+            type={isPreferito(chiave) ? 'solid' : 'outline'}
+            onPress={() => togglePreferito(chiave)}
+            title="Preferito"
+          />
+        </View>
       </TouchableOpacity>
     </Card>
   )
